@@ -1,0 +1,7 @@
+{
+  "name": "WebRTC Peer-to-Peer Tester",
+  "description": "A simple web application to test WebRTC peer-to-peer connections using a signaling server. Create a room and share a QR code, or join a room by scanning one.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
