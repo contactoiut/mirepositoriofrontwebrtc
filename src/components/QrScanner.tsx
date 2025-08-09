@@ -30,7 +30,7 @@ const QrScanner: React.FC<QrScannerProps> = ({ onScanSuccess, onCancel }) => {
         onScanSuccess(decodedText, decodedResult);
       };
 
-      const handleError = (errorMessage: string) => {
+      const handleError = (_errorMessage: string) => {
         // We can ignore errors, as they happen constantly (e.g., no QR code in view)
       };
 
