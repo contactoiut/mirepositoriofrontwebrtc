@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Peer, { DataConnection } from 'peerjs';
 import { QRCodeCanvas } from 'qrcode.react';
@@ -25,8 +26,8 @@ const StatusIndicator: React.FC<{ status: ConnectionStatus }> = ({ status }) => 
   const config = statusConfig[status];
 
   return (
-    <div className="flex items-center space-x-2 p-2 bg-gray-800 rounded-lg">
-      <span className={`w-3 h-3 rounded-full ${config.color}`}></span>
+    <div className="flex items-center space-x-2 p-2 bg-slate-700 rounded-lg">
+      <span className={`w-3 h-3 rounded-full ${config.color} animate-pulse`}></span>
       <span className="text-sm font-medium">{config.text}</span>
     </div>
   );
@@ -68,7 +69,7 @@ export default function App() {
         try {
             const response = await fetch(serverHttpUrl);
             if (!response.ok) {
-                throw new Error(`Server responded with status: ${response.status} ${response.statusText}`);
+                throw new Error(`Server responded with status: ${response.status}`);
             }
             const text = await response.text();
             addLog(`Server health check successful: "${text}"`, 'success');
@@ -111,6 +112,7 @@ export default function App() {
         peer.on('disconnected', () => {
           addLog('Disconnected from signaling server. Attempting to reconnect...', 'system');
           setStatus(ConnectionStatus.DISCONNECTED);
+          // Optional: implement reconnection logic here
         });
 
         peer.on('connection', (conn) => {
@@ -205,14 +207,14 @@ export default function App() {
       <button
         onClick={handleCreateRoom}
         disabled={status !== ConnectionStatus.CONNECTED}
-        className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-bold py-3 px-4 rounded-lg transition duration-200"
+        className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-slate-600 disabled:cursor-not-allowed text-white font-bold py-3 px-4 rounded-lg transition duration-200"
       >
         Create Room
       </button>
       <button
         onClick={handleJoinRoom}
         disabled={status !== ConnectionStatus.CONNECTED}
-        className="w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-bold py-3 px-4 rounded-lg transition duration-200"
+        className="w-full bg-teal-600 hover:bg-teal-700 disabled:bg-slate-600 disabled:cursor-not-allowed text-white font-bold py-3 px-4 rounded-lg transition duration-200"
       >
         Join Room
       </button>
@@ -222,14 +224,14 @@ export default function App() {
   const renderCreate = () => (
     <div className="flex flex-col items-center space-y-4 w-full">
       <h2 className="text-xl font-bold">Room Created</h2>
-      <p className="text-center text-gray-400">Have the other user scan this QR code to join your room.</p>
+      <p className="text-center text-slate-400">Have the other user scan this QR code to join your room.</p>
       <div className="p-4 bg-white rounded-lg">
         <QRCodeCanvas value={peerId} size={256} />
       </div>
-      <p className="text-lg font-mono bg-gray-800 p-2 rounded-md break-all">{peerId}</p>
+      <p className="text-lg font-mono bg-slate-900 p-2 rounded-md break-all">{peerId}</p>
       <button
         onClick={handleBackToHome}
-        className="w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-4 rounded-lg transition duration-200"
+        className="w-full bg-slate-600 hover:bg-slate-700 text-white font-bold py-3 px-4 rounded-lg transition duration-200"
       >
         Back
       </button>
@@ -245,7 +247,7 @@ export default function App() {
        />
        <button
         onClick={handleBackToHome}
-        className="w-full mt-4 bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-4 rounded-lg transition duration-200"
+        className="w-full mt-4 bg-slate-600 hover:bg-slate-700 text-white font-bold py-3 px-4 rounded-lg transition duration-200"
       >
         Cancel
       </button>
@@ -255,12 +257,21 @@ export default function App() {
   const renderConfigError = () => (
      <div className="flex flex-col items-center space-y-4 w-full text-center">
       <h2 className="text-2xl font-bold text-red-500">Configuration Error</h2>
-      <p className="text-gray-300">The application cannot start because the signaling server URL is missing.</p>
-      <p className="text-gray-400">Please make sure the <code className="bg-red-900 text-red-200 p-1 rounded">VITE_PEER_SERVER_URL</code> environment variable is set correctly in your hosting provider (e.g., Netlify).</p>
+      <p className="text-slate-300">The application cannot start because the signaling server URL is missing.</p>
+      <p className="text-slate-400">Please make sure the <code className="bg-red-900 text-red-200 p-1 rounded">VITE_PEER_SERVER_URL</code> environment variable is set correctly in your hosting provider (e.g., Netlify).</p>
     </div>
   );
 
   const renderContent = () => {
+    if(status === ConnectionStatus.ERROR && view !== 'config_error') {
+      return (
+        <div className="flex flex-col items-center space-y-4 w-full text-center">
+          <h2 className="text-2xl font-bold text-red-500">Connection Failed</h2>
+          <p className="text-slate-300">Could not connect to the signaling server.</p>
+          <p className="text-slate-400">Please check the Event Log for details and ensure the server is running and the URL is correct.</p>
+        </div>
+      )
+    }
     switch (view) {
         case 'home': return renderHome();
         case 'create': return renderCreate();
@@ -271,42 +282,42 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-100 flex flex-col items-center p-4 font-sans">
-      <div className="w-full max-w-2xl mx-auto bg-gray-800 rounded-xl shadow-2xl flex flex-col">
-        <header className="p-4 border-b border-gray-700 flex justify-between items-center">
+    <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col items-center p-4 font-sans">
+      <div className="w-full max-w-2xl mx-auto bg-slate-800 rounded-xl shadow-2xl flex flex-col">
+        <header className="p-4 border-b border-slate-700 flex justify-between items-center">
           <h1 className="text-2xl font-bold text-white">WebRTC Signaling Tester</h1>
           <StatusIndicator status={status} />
         </header>
         
-        <main className="p-6 flex-grow flex items-center justify-center">
+        <main className="p-6 flex-grow flex items-center justify-center min-h-[20rem]">
           {renderContent()}
         </main>
 
-        <section className="bg-gray-900 p-4 border-t border-gray-700 rounded-b-xl">
+        <section className="bg-slate-950 p-4 border-t border-slate-700 rounded-b-xl">
           <h3 className="text-lg font-semibold mb-2">Event Log</h3>
           <div className="h-48 overflow-y-auto bg-black p-3 rounded-md font-mono text-sm space-y-1">
             {logs.length === 0 ? (
-              <p className="text-gray-500">No events yet...</p>
+              <p className="text-slate-500">No events yet...</p>
             ) : (
               logs.map((log, index) => (
                 <div key={index} className={`flex items-start ${
                   log.type === 'error' ? 'text-red-400' :
                   log.type === 'success' ? 'text-green-400' :
-                  log.type === 'system' ? 'text-blue-400' : 'text-gray-300'
+                  log.type === 'system' ? 'text-sky-400' : 'text-slate-300'
                 }`}>
-                    <span className="w-20 flex-shrink-0">{log.timestamp}</span>
-                    <span className="flex-grow">{log.message}</span>
+                    <span className="w-24 flex-shrink-0">{log.timestamp}</span>
+                    <span className="flex-grow break-all">{log.message}</span>
                 </div>
               ))
             )}
           </div>
         </section>
       </div>
-       <footer className="text-center text-gray-500 mt-4 text-xs">
+       <footer className="text-center text-slate-500 mt-4 text-xs">
         {PEER_SERVER_URL ? (
-            <p>Using PeerServer at: {PEER_SERVER_URL}</p>
+            <p>Signaling Server: {PEER_SERVER_URL}</p>
         ) : (
-            <p>PeerServer URL not configured.</p>
+            <p>Signaling Server URL not configured.</p>
         )}
        </footer>
     </div>
