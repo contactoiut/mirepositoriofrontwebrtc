@@ -24,7 +24,7 @@ export interface Player {
 
 // A standardized structure for all messages sent between peers
 export interface GameMessage {
-  type: 'CHAT_MESSAGE' | 'PLAYER_JOINED' | 'PLAYER_LEFT' | 'WELCOME' | 'ROOM_FULL' | 'GAME_UPDATE';
+  type: 'CHAT_MESSAGE' | 'PLAYER_LIST_UPDATE' | 'ROOM_FULL';
   payload: any;
 }
 
