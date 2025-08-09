@@ -1,4 +1,4 @@
-import { PeerError as PeerJsError, PeerErrorType } from 'peerjs';
+import { PeerError as PeerJsError } from 'peerjs';
 
 export enum ConnectionStatus {
   INITIALIZING = 'INITIALIZING',
