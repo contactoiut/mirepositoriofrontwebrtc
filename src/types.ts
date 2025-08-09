@@ -1,5 +1,4 @@
-
-import { PeerError } from 'peerjs';
+import { PeerError as PeerJsError, PeerErrorType } from 'peerjs';
 
 export enum ConnectionStatus {
   INITIALIZING = 'INITIALIZING',
@@ -29,5 +28,7 @@ export interface GameMessage {
   payload: any;
 }
 
-// Re-exporting PeerError to be used in App.tsx for better type safety
-export type { PeerError };
+// Create a concrete, non-generic type alias for PeerError.
+// By defining it with `string`, it becomes compatible with all PeerJS error events,
+// including those on Peer and DataConnection, which use different error type sets.
+export type PeerError = PeerJsError<string>;
