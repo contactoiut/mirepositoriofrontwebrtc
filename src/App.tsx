@@ -94,7 +94,6 @@ export default function App() {
           broadcastMessage(message, conn.peer);
         }
       } else {
-        // Clients handle all their data here
         handleDataReceivedAsClient(message);
       }
     });
@@ -139,18 +138,16 @@ export default function App() {
       addLog(`[You]: ${message}`, 'info');
       broadcastMessage(chatMessage);
     } else {
-      // Client sends to host, host will broadcast
       const hostConnection = connectionsRef.current.values().next().value;
       if (hostConnection) {
         hostConnection.send(chatMessage);
-        // Optimistically add to own log. Host won't echo it back to sender.
         addLog(`[You]: ${message}`, 'info');
       } else {
         addLog('Cannot send message: Not connected to host.', 'error');
       }
     }
 
-    setMessage(''); // Clear input after sending
+    setMessage('');
   }, [message, role, peerId, addLog, broadcastMessage]);
 
   useEffect(() => {
@@ -171,26 +168,37 @@ export default function App() {
       setPeerId(id);
       setStatus(ConnectionStatus.CONNECTED);
     });
+
     peer.on('error', (err: PeerError) => {
       addLog(`PeerJS error: ${err.type} - ${err.message}`, 'error');
       if (err.type === 'peer-unavailable') {
-        addLog(`Could not find host with code: ${roomCode}. Please check code.`, 'error');
+        addLog('Could not connect to host. Please check the room code.', 'error');
         setRole(null);
+        setStatus(ConnectionStatus.CONNECTED);
       } else {
         setStatus(ConnectionStatus.ERROR);
       }
     });
+
     peer.on('disconnected', () => {
       addLog('Disconnected from signaling server. Reconnecting...', 'system');
       setStatus(ConnectionStatus.CONNECTING);
-      peer.reconnect();
     });
-    peer.on('connection', (conn) => {
-      if (role !== 'host') {
-        addLog(`Incoming connection from ${conn.peer} ignored: not a host.`, 'system');
-        conn.close();
-        return;
+
+    return () => {
+      if (peer && !peer.destroyed) {
+        peer.destroy();
       }
+    };
+  }, [addLog]);
+
+  useEffect(() => {
+    const peer = peerRef.current;
+    if (!peer || role !== 'host') {
+      return;
+    }
+
+    const handleConnection = (conn: DataConnection) => {
       if (players.length >= MAX_PLAYERS) {
         addLog(`Connection from ${conn.peer} rejected: room full.`, 'system');
         conn.on('open', () => conn.send({ type: 'ROOM_FULL', payload: {} }));
@@ -211,9 +219,16 @@ export default function App() {
         });
         setupConnectionListeners(conn);
       });
-    });
-    return () => { peer.destroy(); };
-  }, [addLog, role, roomCode, players.length, setupConnectionListeners]);
+    };
+
+    peer.on('connection', handleConnection);
+
+    return () => {
+      if (peer && !peer.destroyed) {
+        peer.off('connection', handleConnection);
+      }
+    };
+  }, [role, players.length, addLog, broadcastMessage, setupConnectionListeners]);
 
   const handleCreateRoom = () => {
     setRole('host');

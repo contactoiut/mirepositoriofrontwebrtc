@@ -53,7 +53,7 @@ const QrScanner: React.FC<QrScannerProps> = ({ onScanSuccess, onCancel }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-75 flex flex-col items-center justify-center z-50 p-4">
-      <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md">
+      <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md text-gray-900">
         <div id="qr-reader-container"></div>
       </div>
       <button
